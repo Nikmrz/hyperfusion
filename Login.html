@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HYPER FUSION</title>
+    <link rel="stylesheet" href="login.css">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+
+<body>
+    <div class="index-container">
+        <div class="heading">
+            <h2>LOGIN HERE</h2>
+        </div>
+        <form method="POST" action="Login.php">
+            <label for="email">Email:</label>
+            <input type="email" name="email" id="email" placeholder="Enter registered email" required /><br>
+            <label for="password">Password:</label>
+            <input type="password" name="password" id="password" placeholder="Your password" required /><br>
+            <div class="g-recaptcha" data-sitekey="6LcaI2kpAAAAAAMVPFzrxJA5Rxnur-HyfB1sxO75"></div>
+            <button type="submit" name="login">LOG IN</button><br>
+            <div class="edot">
+                <a href="Signup.html" style="color: rgb(255, 255, 255)">DON'T HAVE AN ACCOUNT? CREATE HERE</a><br>
+                <a href="#" style="color: rgb(255, 255, 255)">FORGET PASSWORD? RECOVER HERE</a>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>
