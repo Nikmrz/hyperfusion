@@ -2,10 +2,10 @@
 session_start();
 error_reporting(0);
 include 'db.php';
-if (strlen($_SESSION['uid']==0)) {
+/*if (strlen($_SESSION['uid']==0)) {
   header('location:logout.php');
   } else{
-
+*/
   ?>
 
 <!DOCTYPE html>
@@ -258,4 +258,3 @@ if (strlen($_SESSION['uid']==0)) {
   </body>
 
 </html>
-<?php }  ?>

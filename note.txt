@@ -1,0 +1,152 @@
+Here’s how these tables interact and flow in an eCommerce website:
+
+1. **User Registration**: When a new user registers, their information (username, email, password, etc.) is stored in the `users` table. Each user gets a unique `user_id` that is referenced across various tables.
+   
+2. **Product Browsing**: Users can browse products, which are stored in the `products` table. Each product belongs to a category, defined in the `categories` table.
+
+3. **Adding to Cart**: When a user adds items to their shopping cart, a new entry is created in the `cart` table with a reference to the `user_id`. The products they add to the cart are stored in the `cart_items` table, which links each cart to multiple `product_id`s.
+
+4. **Placing an Order**: Once the user decides to checkout, the system creates a new record in the `orders` table for the user, with details about the order like `total_price` and `order_status`. The items in the cart are then transferred to the `order_items` table, linking the `order_id` to the `product_id` and recording the quantity of each item.
+
+5. **Payment**: After the order is placed, payment information is stored in the `payment_details` table, which is linked to the `order_id`. Payment status (e.g., Paid or Unpaid) and method (e.g., credit card, PayPal) are recorded here.
+
+6. **Order Fulfillment**: The `order_status` field in the `orders` table is updated as the order progresses (e.g., from Pending to Shipped to Delivered).
+
+7. **Reviewing Products**: After receiving their products, users can leave reviews, which are stored in the `reviews` table. Each review links to both the `user_id` and `product_id`.
+
+8. **Product Stock and Category Management**: Admins or sellers can manage product inventory via the `products` table, updating `stock` levels and associating products with appropriate categories using the `categories` table.
+
+The tables are interlinked via primary keys and foreign keys, ensuring data consistency and relational integrity across the platform. This setup supports key eCommerce operations from browsing to order fulfillment and reviews.
+
+
+Here’s a comprehensive database schema for an eCommerce website with primary keys, foreign keys, and necessary tables.
+
+1. users Table
+This table stores information about customers.
+
+sql
+Copy code
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    phone VARCHAR(20),
+    address TEXT,
+    birthday DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+2. products Table
+This table stores information about the products being sold.
+
+sql
+Copy code
+CREATE TABLE products (
+    product_id INT AUTO_INCREMENT PRIMARY KEY,
+    product_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    price DECIMAL(10, 2) NOT NULL,
+    stock INT NOT NULL,
+    category_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (category_id) REFERENCES categories(category_id) ON DELETE SET NULL
+);
+3. categories Table
+Stores product categories (like electronics, clothing, etc.).
+
+sql
+Copy code
+CREATE TABLE categories (
+    category_id INT AUTO_INCREMENT PRIMARY KEY,
+    category_name VARCHAR(100) NOT NULL UNIQUE
+);
+4. orders Table
+This table stores customer orders. Each order belongs to a user.
+
+sql
+Copy code
+CREATE TABLE orders (
+    order_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    total_price DECIMAL(10, 2) NOT NULL,
+    order_status VARCHAR(50) DEFAULT 'Pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+5. order_items Table
+Stores individual items in each order. Each item links to an order and a product.
+
+sql
+Copy code
+CREATE TABLE order_items (
+    order_item_id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT,
+    product_id INT,
+    quantity INT NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
+);
+6. payment_details Table
+Stores payment information for each order.
+
+sql
+Copy code
+CREATE TABLE payment_details (
+    payment_id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT,
+    payment_method VARCHAR(50),
+    payment_status VARCHAR(50) DEFAULT 'Unpaid',
+    payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE
+);
+7. reviews Table
+Stores product reviews given by users.
+
+sql
+Copy code
+CREATE TABLE reviews (
+    review_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    product_id INT,
+    rating INT CHECK (rating BETWEEN 1 AND 5),
+    review_text TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
+);
+8. cart Table
+Stores items added to the user's shopping cart.
+
+sql
+Copy code
+CREATE TABLE cart (
+    cart_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+9. cart_items Table
+Stores individual items in the cart.
+
+sql
+Copy code
+CREATE TABLE cart_items (
+    cart_item_id INT AUTO_INCREMENT PRIMARY KEY,
+    cart_id INT,
+    product_id INT,
+    quantity INT NOT NULL,
+    FOREIGN KEY (cart_id) REFERENCES cart(cart_id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
+);
+Summary of Tables:
+users: Stores user information.
+products: Stores product information.
+categories: Stores product categories.
+orders: Stores customer orders.
+order_items: Links orders to products (what items were ordered).
+payment_details: Stores payment-related information for orders.
+reviews: Stores user reviews for products.
+cart: Stores shopping carts for users.
+cart_items: Stores items within each cart.
+This schema provides a solid foundation for an eCommerce platform, ensuring a relational structure with the necessary foreign keys and constraints.
