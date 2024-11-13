@@ -52,6 +52,7 @@ if (!$game) {
 <link rel="stylesheet" href="assets/css/animate.css">
 <link rel="stylesheet"href="https://unpkg.com/swiper@7/swiper-bundle.min.css"/>
 <style>
+    
         .video-container, .image-container {
             position: relative;
             padding-top: 56.25%; /* 16:9 Aspect Ratio */
@@ -194,7 +195,7 @@ if (!$game) {
                                         </div>
                                         </div>
                                         <div class="col-lg-12">
-                                            <p><?php echo nl2br(htmlspecialchars($game['description'])); ?></p>
+                                            <p style="color: white;"><?php echo nl2br(htmlspecialchars($game['description'])); ?></p>
                                         </div>
                                 <div class="container text-center">
                                     <div class="row justify-content-md-center">
@@ -220,9 +221,57 @@ if (!$game) {
                                             <div class="main-border-button">
                                                <a href="#"><i class="fa fa-credit-card" style="padding-right: 20px;"></i>BUY NOW!</a>
                                             </div>
-                                        
                                         </div>
                                     </div>
+                                    <!-- New Section for Services -->
+                                    <div class="container mt-5">
+                                        <div class="row text-center">
+                                            <!-- Free Delivery Box -->
+                                            <div class="col-lg-4 col-md-4 col-sm-12 mb-4">
+                                                <div class="service-box p-4" style="background-color: #1e1e1e; border-radius: 15px;">
+                                                    <i class="fa fa-truck fa-3x mb-3" style="color: white;"></i>
+                                                    <h5 style="color: white;">Free Delivery</h5>
+                                                    <p style="color: grey;">Enjoy free delivery on all orders with no minimum purchase!</p>
+                                                </div>
+                                            </div>
+
+                                            <!-- Easy Support Box -->
+                                            <div class="col-lg-4 col-md-4 col-sm-12 mb-4">
+                                                <div class="service-box p-4" style="background-color: #1e1e1e; border-radius: 15px;">
+                                                    <i class="fa fa-headset fa-3x mb-3" style="color: white;"></i>
+                                                    <h5 style="color: white;">Easy Support</h5>
+                                                    <p style="color: grey;">Our support team is here to assist you 24/7 for any inquiries!</p>
+                                                </div>
+                                            </div>
+
+                                            <!-- Return and Exchange Policy Box -->
+                                            <div class="col-lg-4 col-md-4 col-sm-12 mb-4">
+                                                <div class="service-box p-4" style="background-color: #1e1e1e; border-radius: 15px;">
+                                                    <i class="fa fa-exchange-alt fa-3x mb-3" style="color: white;"></i>
+                                                    <h5 style="color: white;">Return and Exchange Policy</h5>
+                                                    <p style="color: grey;">Hassle-free returns and exchanges within 7 days of purchase!</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                <!-- Review Section -->
+                                    <div class="container mt-5">
+                                        <h3 style="color: white; text-align: center;">Leave a Review</h3>
+                                        <form action="submit_review.php" method="POST" class="mt-4">
+                                            <div class="form-group">
+                                                <label for="name" style="color: white;">Name</label>
+                                                <input type="text" id="name" name="name" class="form-control" required style="background-color: #343a40;margin-bottom:25px; color: white;">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="review" style="color: white;">Your Review</label>
+                                                <textarea id="review" name="review" class="form-control" rows="4" required style="background-color: #343a40; color: white;"></textarea>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary" style="background-color: #007bff;margin-top:25px; border: none;">Submit</button>
+                                        </form>
+                                    </div>
+
+
                                 </div>
                             </div>
                         </div>
