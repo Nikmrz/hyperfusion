@@ -1,0 +1,227 @@
+
+    /* General styles */
+    body {
+        background-color: #242424;
+        color: #fff;
+        font-family: 'Arial', sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .container {
+        margin-top: 40px;
+        max-width: 900px;
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+        padding: 0 20px;
+    }
+
+    h2, h4 {
+        text-align: center !important;
+        font-weight: bold !important;
+        margin-bottom: 20px !important;
+    }
+
+    h2 {
+        color: #4caf50; /* Green theme */
+    }
+
+    a {
+        color: #4caf50;
+        text-decoration: none;
+    }
+
+    a:hover {
+        color: #388e3c;
+    }
+
+    /* Card sections */
+    .billing-summary,
+    .cart-items,
+    .delivery-options,
+    .payment-options {
+        background-color: #2b2b2b;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .billing-summary h4,
+    .cart-items h4,
+    .delivery-options h4,
+    .payment-options h4 {
+        color: #5cdb95; /* Light green */
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+    }
+    .table-dark td {
+        vertical-align: middle;
+        text-align: left;
+    }
+
+    .table-dark tr:last-child td {
+        font-size: 1.1rem;
+        font-weight: bold;
+    }
+
+    label {
+        font-size: 1rem;
+        margin: 5px 0;
+        display: block;
+    }
+
+    /* Adjust radio buttons */
+    input[type="radio"] {
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #4caf50;
+        border-radius: 50%;
+        outline: none;
+        cursor: pointer;
+        margin-right: 10px;
+        transition: background-color 0.3s, border-color 0.3s;
+    }
+
+    input[type="radio"]:checked {
+        background-color: #4caf50;
+        border-color: #388e3c;
+    }
+    /* Table styles */
+    .table-dark {
+        background-color: #3a3a3a;
+        color: #fff;
+        border-radius: 5px;
+        overflow: hidden;
+        margin-bottom: 0;
+    }
+
+    .table-dark th,
+    .table-dark td {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .table-dark th {
+        background-color: #4caf50;
+        color: #fff;
+    }
+
+    .table-dark td {
+        color: #ddd;
+    }
+
+    .table-dark tr:nth-child(odd) {
+        background-color: #333;
+    }
+
+    .table-dark tr:hover {
+        background-color: #444;
+    }
+
+    /* Buttons */
+    .btn-success {
+        background-color: #4caf50;
+        border: none;
+        padding: 12px 25px;
+        font-size: 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        width: 100%;
+    }
+
+    .btn-success:hover {
+        background-color: #388e3c;
+    }
+
+    /* Radio Buttons */
+    input[type="radio"] {
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #4caf50;
+        border-radius: 50%;
+        outline: none;
+        cursor: pointer;
+        margin-right: 10px;
+        transition: background-color 0.3s, border-color 0.3s;
+    }
+
+    input[type="radio"]:checked {
+        background-color: #4caf50;
+        border-color: #388e3c;
+    }
+
+    label {
+        font-size: 1.1rem;
+        display: inline-flex;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    /* Summary styles */
+    .order-summary p {
+        font-size: 1rem;
+        margin: 5px 0;
+    }
+
+    .order-summary strong {
+        color: #5cdb95;
+    }
+
+    #delivery-charge,
+    #grand-total {
+        font-weight: bold;
+    }
+
+    /* Full-page coverage */
+    html, body {
+        height: 100%;
+    }
+
+    footer {
+        margin-top: auto;
+        text-align: center;
+        padding: 10px 0;
+        background-color: #1e1e1e;
+        color: #aaa;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .container {
+            padding: 0 15px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+        }
+
+        h4 {
+            font-size: 1.2rem;
+        }
+
+        .btn-success {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        label {
+            font-size: 1rem;
+        }
+    }
+
+/* Styling for disabled delivery options */
+label.delivery-option.disabled {
+    opacity: 0.5; /* Makes it look faded */
+    cursor: not-allowed; /* Changes the cursor to indicate it's not clickable */
+}
+
+label.delivery-option.disabled:hover {
+    text-decoration: none; /* Prevents any hover effect */
+}

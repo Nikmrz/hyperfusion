@@ -136,7 +136,7 @@ body .page-content {
 
 p {
   font-size: 15px;
-  color: #666;
+  color: #ece2e2;
   line-height: 30px;
   margin-bottom: 0px;
 }
@@ -449,7 +449,7 @@ Header Style
   font-weight: 400;
   font-size: 14px;
   text-transform: capitalize;
-  color: #666;
+  color: #e9d9d9;
   -webkit-transition: all 0.3s ease 0s;
   -moz-transition: all 0.3s ease 0s;
   -o-transition: all 0.3s ease 0s;

@@ -28,6 +28,25 @@ if (!$game) {
     echo "Game not found.";
     exit;
 }
+
+// Fetch comments for the game
+$comment_sql = "SELECT c.comment, c.created_at, u.username 
+                FROM game_comments c
+                JOIN users u ON c.user_id = u.id
+                WHERE c.game_id = ?
+                ORDER BY c.created_at DESC";
+$comment_stmt = $conn->prepare($comment_sql);
+
+if ($comment_stmt) {
+    $comment_stmt->bind_param("i", $game_id);
+    $comment_stmt->execute();
+    $comments_result = $comment_stmt->get_result();
+} else {
+    // Error handling if the query fails
+    $comments_result = null;
+    echo "<p style='color: red;'>Error fetching comments. Please try again later.</p>";
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -74,10 +93,106 @@ if (!$game) {
         .image-container img {
             object-fit: cover; /* Ensures the image covers the container */
         }
-
+        
+        .comment-section {
+            margin-top: 40px;
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 15px;
+            color: white;
+        }
+        .comment {
+            border-bottom: 1px solid #444;
+            padding: 10px 0;
+        }
+        .comment:last-child {
+            border-bottom: none;
+        }
+        .comment .user-name {
+            font-weight: bold;
+        }
+        .comment .timestamp {
+            font-size: 0.9em;
+            color: grey;
+        }
+    
         
     </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+<script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let quantity = 1; // Initial quantity
+            let originalPrice = 10; // Replace with the price fetched from the database
+
+            // Update total price function
+            function updateTotalPrice() {
+                const totalPrice = quantity * originalPrice;
+                document.getElementById('total-price').innerText = totalPrice.toFixed(2);
+            }
+
+            // Decrease quantity
+            document.getElementById('decrease-btn').addEventListener('click', function () {
+                if (quantity > 1) {
+                    quantity--;
+                    document.getElementById('quantity').innerText = quantity;
+                    updateTotalPrice();
+                }
+            });
+
+            // Increase quantity
+            document.getElementById('increase-btn').addEventListener('click', function () {
+                quantity++;
+                document.getElementById('quantity').innerText = quantity;
+                updateTotalPrice();
+            });
+
+            // Initial price fetch
+            // Assume you're using AJAX to fetch the price from the database
+            fetch('get_price.php')
+                .then(response => response.json())
+                .then(data => {
+                    originalPrice = data.price;
+                    updateTotalPrice();
+                })
+                .catch(error => console.error('Error fetching price:', error));
+        });
+        
+        function addToCart(id) {
+    // Get the quantity from the page
+    let quantity = parseInt(document.getElementById('quantity').innerText);
+
+    console.log('Add to cart function triggered for game ID: ' + id); // Log to check if it's triggered
+
+    // Send AJAX request to add to cart
+    $.post("cart.php", { 
+        id: id, 
+        action: 'add', 
+        quantity: quantity // Send dynamic quantity
+    }, function(response) {
+        console.log('Response from server:', response); // Log the response from server
+        
+        try {
+            let data = JSON.parse(response); // Parse the JSON response
+
+            if (data.status === 'success') {
+                alert("Game added to cart!");
+                // Optionally, you can update the cart display here (e.g., update a cart icon)
+            } else {
+                alert("Error: " + data.message); // Show error message if not success
+            }
+        } catch (e) {
+            console.error('Error parsing response:', e);
+            alert("There was an error with the cart action. Please try again.");
+        }
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+        console.error("Request failed: " + textStatus, errorThrown);
+        alert("There was a problem communicating with the server. Please try again.");
+    });
+}
+
+
+    </script>
 </head>
 <body>
  
@@ -88,7 +203,7 @@ if (!$game) {
             <div class="col-12">
                 <nav class="main-nav">
                     <!-- ***** Logo Start ***** -->
-                    <a href="index.html" class="logo">
+                    <a href="index.php" class="logo">
                         <img src="assets/images/newlogo.png" alt="">
                     </a>
                     <!-- ***** Logo End ***** -->
@@ -102,10 +217,10 @@ if (!$game) {
                     <!-- ***** Search End ***** -->
                     <!-- ***** Menu Start ***** -->
                     <ul class="nav">
-                        <li><a href="index.html">Home</a></li>
-                        <li><a href="#">Browse</a></li>
-                        <li><a href="#">Streams</a></li>
-                        <li><a href="profile.html">Profile <img src="assets/images/profile-header.jpg" alt=""></a></li>
+                        <li><a href="index.php">Home</a></li>
+                        <li><a href="browse.php">Browse</a></li>
+                        <li><a href="streams.php">Streams</a></li>
+                        <li><a href="profile.php">Profile <img src="assets/images/profile-header.jpg" alt=""></a></li>
                     </ul>   
                     <a class='menu-trigger'>
                         <span>Menu</span>
@@ -215,14 +330,73 @@ if (!$game) {
                                 </div>
                                         <div class="col-lg-12">
                                             <div class="main-border-button">
-                                              <a href="#"><i class="fa fa-cart-plus" style="padding-right: 20px;"></i>ADD TO CART</a>
+                                            <button class="btn btn-success" style="margin-top:20px;width:100%;"
+                                            onclick="addToCart(<?php echo $game['id']; ?>)">
+                                            <i class="fa fa-shopping-cart"
+                                            style="padding-right: 20px;"></i>Add to Cart</button>
                                             </div>
                                             <div class="col-lg-12">
                                             <div class="main-border-button">
-                                               <a href="#"><i class="fa fa-credit-card" style="padding-right: 20px;"></i>BUY NOW!</a>
-                                            </div>
+                                             <button class="btn btn-danger" style="margin-top:20px;width:100%;"
+                                            onclick="buyNow(<?php echo $game['id']; ?>, 1)"> 
+                                                <i class="fa fa-credit-card" style="padding-right: 20px;"></i>BUY NOW!</button>
+                                        </div>
+
+                                        <script>
+                                       function buyNow(gameId) {
+                                            // Get the current quantity value from the page
+                                            let quantity = parseInt(document.getElementById('quantity').innerText);
+
+                                            // Validate the quantity (optional)
+                                            if (isNaN(quantity) || quantity <= 0) {
+                                                alert("Please select a valid quantity.");
+                                                return;
+                                            }
+
+                                            // Redirect to checkout.php with the game ID and quantity
+                                            window.location.href = 'checkout.php?action=buy_now&id=' + gameId + '&quantity=' + quantity;
+                                        }
+                                        </script>
+
                                         </div>
                                     </div>
+
+                                    <!--Comment section display for users -->
+<!-- Comments Section -->
+    <div class="row">
+            <div class="col-lg-12 comment-section">
+                <h3>Comments</h3>
+                <?php if ($comments_result->num_rows > 0): ?>
+                    <?php while ($comment = $comments_result->fetch_assoc()): ?>
+                        <div class="comment">
+                            <p class="user-name"><?php echo htmlspecialchars($comment['username']); ?></p>
+                            <p><?php echo nl2br(htmlspecialchars($comment['comment'])); ?></p>
+                            <p class="timestamp"><?php echo htmlspecialchars($comment['created_at']); ?></p>
+                        </div>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <p>No comments yet. Be the first to comment!</p>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Add Comment Form -->
+        <div class="row">
+            <div class="col-lg-12">
+                <h3 style="color: white;">Leave a Comment</h3>
+                <form action="submit_comment.php" method="POST">
+                    <input type="hidden" name="game_id" value="<?php echo $game_id; ?>">
+                    <div class="form-group">
+                        <label for="comment" style="color: white;">Your Comment</label>
+                        <textarea id="comment" name="comment" class="form-control" rows="2" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-2">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+<!--Comment section display end for users -->
+
                                     <!-- New Section for Services -->
                                     <div class="container mt-5">
                                         <div class="row text-center">
@@ -231,7 +405,7 @@ if (!$game) {
                                                 <div class="service-box p-4" style="background-color: #1e1e1e; border-radius: 15px;">
                                                     <i class="fa fa-truck fa-3x mb-3" style="color: white;"></i>
                                                     <h5 style="color: white;">Free Delivery</h5>
-                                                    <p style="color: grey;">Enjoy free delivery on all orders with no minimum purchase!</p>
+                                                    <p style="color: grey;">Enjoy free delivery on all orders with minimum purchase of 50k or above!</p>
                                                 </div>
                                             </div>
 
@@ -264,6 +438,10 @@ if (!$game) {
                                                 <input type="text" id="name" name="name" class="form-control" required style="background-color: #343a40;margin-bottom:25px; color: white;">
                                             </div>
                                             <div class="form-group">
+                                                <label for="email" style="color: white;">Email</label>
+                                                <input type="email" id="email" name="email" class="form-control" required style="background-color: #343a40;margin-bottom:25px; color: white;">
+                                            </div>
+                                            <div class="form-group">
                                                 <label for="review" style="color: white;">Your Review</label>
                                                 <textarea id="review" name="review" class="form-control" rows="4" required style="background-color: #343a40; color: white;"></textarea>
                                             </div>
@@ -282,44 +460,7 @@ if (!$game) {
         </div>
     </div>
 </body>
-<script>
-        document.addEventListener('DOMContentLoaded', function () {
-            let quantity = 1; // Initial quantity
-            let originalPrice = 10; // Replace with the price fetched from the database
 
-            // Update total price function
-            function updateTotalPrice() {
-                const totalPrice = quantity * originalPrice;
-                document.getElementById('total-price').innerText = totalPrice.toFixed(2);
-            }
-
-            // Decrease quantity
-            document.getElementById('decrease-btn').addEventListener('click', function () {
-                if (quantity > 1) {
-                    quantity--;
-                    document.getElementById('quantity').innerText = quantity;
-                    updateTotalPrice();
-                }
-            });
-
-            // Increase quantity
-            document.getElementById('increase-btn').addEventListener('click', function () {
-                quantity++;
-                document.getElementById('quantity').innerText = quantity;
-                updateTotalPrice();
-            });
-
-            // Initial price fetch
-            // Assume you're using AJAX to fetch the price from the database
-            fetch('get_price.php')
-                .then(response => response.json())
-                .then(data => {
-                    originalPrice = data.price;
-                    updateTotalPrice();
-                })
-                .catch(error => console.error('Error fetching price:', error));
-        });
-    </script>
 </html>
 
 <?php

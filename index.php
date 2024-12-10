@@ -115,9 +115,9 @@ shuffle($games);
                     </div>
                     <ul class="nav">
                         <li><a href="index.php" class="active">Home</a></li>
-                        <li><a href="#">Browse</a></li>
-                        <li><a href="#">Streams</a></li>
-                        
+                        <li><a href="browse.php">Browse</a></li>
+                        <li><a href="streams.php">Streams</a></li>
+                         
                         <li><a href="profile.php">Profile <img src="assets/images/profile-header.jpg" alt=""></a></li>
                     </ul>   
                     <a class='menu-trigger'>
@@ -140,7 +140,7 @@ shuffle($games);
                                 <h5>Welcome To HYPER FUSION</h5>
                                 <h4><em>Browse</em> Our Popular Games Here</h4>
                                 <div class="main-button">
-                                    <a href="#">GET STARTED</a>
+                                    <a href="browse.php">GET STARTED</a>
                                 </div>
                             </div>
                         </div>
@@ -186,7 +186,7 @@ shuffle($games);
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
-                <p>Copyright © 2024 <a href="#">HYPER FUSION</a> - MIS Project</p>
+                <p>Copyright © 2024 <a href="aboutus.php">HYPER FUSION</a> All rights reserved.</p>
             </div>
         </div>
     </div>
