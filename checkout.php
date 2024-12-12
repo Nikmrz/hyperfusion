@@ -56,43 +56,72 @@ $user = mysqli_fetch_assoc($result);
 
 // Handle form submission for checkout
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        // Retrieve form data
-        $delivery_location = $_POST['location']; // Radio button value
-        $delivery_charge = $delivery_location === 'inside' ? 100 : 300;
-        $grand_total = $total_price + $delivery_charge;
-        $delivery_place = $_POST['delivery_address']; // Text input value
+    // Retrieve form data
+    $delivery_location = $_POST['location']; // Radio button value
+    $delivery_charge = $delivery_location === 'inside' ? 100 : 300;
+    $delivery_location = isset($_POST['location']) ? $_POST['location'] : null;
+
+if (!$delivery_location) {
+    echo "<script>alert('Please select a delivery location.'); window.history.back();</script>";
+    exit();
+}
+
+    $grand_total = $total_price + $delivery_charge;
+    $delivery_place = $_POST['delivery_address']; // Text input value
+    $payment_method = $_POST['payment_method']; // 'cod' or 'khalti'
+
+    // Insert order into the orders table
+    $order_query = "INSERT INTO orders (user_id, total_amount, delivery_charge, location, place) VALUES (?, ?, ?, ?, ?)";
+    $stmt = mysqli_prepare($con, $order_query);
+
+    if (!$stmt) {
+        die("Prepare failed: " . mysqli_error($con)); // Debugging in case of prepare failure
+    }
+
+    mysqli_stmt_bind_param($stmt, "idsss", $user_id, $grand_total, $delivery_charge, $delivery_location, $delivery_place);
+
+    if (!mysqli_stmt_execute($stmt)) {
+        die("Execute failed: " . mysqli_error($con)); // Debugging in case of execute failure
+    }
+
+    $order_id = mysqli_stmt_insert_id($stmt);
+
+    // Insert order items into order_items table
+    foreach ($cart_items as $id => $item) {
+        $item_query = "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)";
+        $stmt_item = mysqli_prepare($con, $item_query);
+        mysqli_stmt_bind_param($stmt_item, "iiid", $order_id, $id, $item['quantity'], $item['price']);
+        mysqli_stmt_execute($stmt_item);
+    }
+
+    // Store order ID and create transaction record
+    $_SESSION['order_id'] = $order_id;
+    $_SESSION['grand_total'] = $grand_total;
     
-        // Insert order into the orders table
-        $order_query = "INSERT INTO orders (user_id, total_amount, delivery_charge, location, place) VALUES (?, ?, ?, ?, ?)";
-        $stmt = mysqli_prepare($con, $order_query);
-    
-        if (!$stmt) {
-            die("Prepare failed: " . mysqli_error($con)); // Debugging in case of prepare failure
-        }
-    
-        mysqli_stmt_bind_param($stmt, "idsss", $user_id, $grand_total, $delivery_charge, $delivery_location, $delivery_place);
-    
-        if (!mysqli_stmt_execute($stmt)) {
-            die("Execute failed: " . mysqli_error($con)); // Debugging in case of execute failure
-        }
-    
-        $order_id = mysqli_stmt_insert_id($stmt);
-    
-        // Insert order items into order_items table
-        foreach ($cart_items as $id => $item) {
-            $item_query = "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)";
-            $stmt_item = mysqli_prepare($con, $item_query);
-            mysqli_stmt_bind_param($stmt_item, "iiid", $order_id, $id, $item['quantity'], $item['price']);
-            mysqli_stmt_execute($stmt_item);
-        }
-    
-        // Store order ID and prepare for payment
-        $_SESSION['order_id'] = $order_id;
-        $_SESSION['grand_total'] = $grand_total;
-    
-        // Redirect to payment page
-        
-    echo "<script>window.location.href = 'fee.php';</script>";
+    $payment_status = ($payment_method === 'cod') ? 'Pending' : 'Initiated';
+// Assign payment status based on payment method
+$payment_status = ($payment_method === 'cod') ? 'Pending' : 'Initiated';
+
+// Prepare the SQL statement for transactions
+$transaction_query = "INSERT INTO transactions (order_id, user_id, amount, payment_method, payment_status) VALUES (?, ?, ?, ?, ?)";
+$stmt_transaction = mysqli_prepare($con, $transaction_query);
+
+if (!$stmt_transaction) {
+    die("Prepare failed: " . mysqli_error($con));
+}
+
+// Bind and execute the statement
+mysqli_stmt_bind_param($stmt_transaction, "iidss", $order_id, $user_id, $grand_total, $payment_method, $payment_status);
+if (!mysqli_stmt_execute($stmt_transaction)) {
+    die("Execute failed: " . mysqli_error($con));
+}
+$_SESSION['cart'] = $cart_items;
+    // Redirect based on payment method
+    if ($payment_method === 'khalti') {
+        echo "<script>window.location.href = 'khalti_checkout.php';</script>";
+    } else {
+        echo "<script>alert('Order placed successfully! Cash on Delivery selected.'); window.location.href = 'order-summary.php';</script>";
+    }
     exit();
 }
 ?>
@@ -104,11 +133,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Checkout</title>
     <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="checkout.css" rel="stylesheet">
-    
-
 </head>
 <body>
-
 <div class="container">
     <h2 class="text-center text-white">Checkout</h2>
     
@@ -123,61 +149,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- Cart Items -->
     <div class="cart-items">
-    <h4>Cart Items</h4>
-    <form method="POST" action="checkout.php">
-        <table class="table table-dark">
-            <thead>
-                <tr>
-                    <th>Item</th>
-                    <th>Price</th>
-                    <th>Quantity</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($cart_items as $item): ?>
+        <h4>Cart Items</h4>
+        <form method="POST" action="checkout.php">
+            <table class="table table-dark">
+                <thead>
                     <tr>
-                        <td><?= htmlspecialchars($item['name']) ?></td>
-                        <td>$<?= number_format($item['price'], 2) ?></td>
-                        <td><?= $item['quantity'] ?></td>
-                        <td>$<?= number_format($item['price'] * $item['quantity'], 2) ?></td>
+                        <th>Item</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
                     </tr>
-                <?php endforeach; ?>
-                <tr>
-                    <td colspan="3"><strong>Subtotal</strong></td>
-                    <td><strong>$<?= number_format($total_price, 2) ?></strong></td>
-                </tr>
-                <tr>
-                    <td colspan="3"><label for="delivery-location">Delivery Address:</label></td>
-                    <td><input type="text" id="delivery-location" name="delivery_address" placeholder="Enter delivery address" class="form-control" required></td>
-                </tr>
-                <tr>
-                    <td colspan="4"><h4>Delivery Options</h4></td>
-                </tr>
-                <tr>
-                    <td colspan="4">
-                    <label class="delivery-option">
-    <input type="radio" name="location" value="inside"> Inside Valley (Delivery Charge: $100)
-</label><br>
-<label class="delivery-option">
-    <input type="radio" name="location" value="outside"> Outside Valley (Delivery Charge: $300)
-</label>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="3"><strong>Delivery Charge</strong></td>
-                    <td><strong>$<span id="delivery-charge">0.00</span></strong></td>
-                </tr>
-                <tr>
-                    <td colspan="3"><strong>Grand Total</strong></td>
-                    <td><strong>$<span id="grand-total"><?= number_format($total_price, 2) ?></span></strong></td>
-                </tr>
-            </tbody>
-        </table>
-        <button type="submit" class="btn btn-success mt-3">Place Order</button>
-    </form>
+                </thead>
+                <tbody>
+                    <?php foreach ($cart_items as $item): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($item['name']) ?></td>
+                            <td>$<?= number_format($item['price'], 2) ?></td>
+                            <td><?= $item['quantity'] ?></td>
+                            <td>$<?= number_format($item['price'] * $item['quantity'], 2) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    <tr>
+                        <td colspan="3"><strong>Subtotal</strong></td>
+                        <td><strong>$<?= number_format($total_price, 2) ?></strong></td>
+                    </tr>
+                    <tr>
+                        <td colspan="3"><label for="delivery-location">Delivery Address:</label></td>
+                        <td><input type="text" id="delivery-location" name="delivery_address" placeholder="Enter delivery address" class="form-control" required></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4"><h4>Delivery Options</h4></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4">
+                            <label class="delivery-option">
+                                <input type="radio" name="location" value="inside"> Inside Valley (Delivery Charge: $100)
+                            </label><br>
+                            <label class="delivery-option">
+                                <input type="radio" name="location" value="outside"> Outside Valley (Delivery Charge: $300)
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3"><label for="payment-method">Payment Method:</label></td>
+                        <td>
+                            <input type="radio" name="payment_method" value="cod" required> Cash on Delivery
+                            <input type="radio" name="payment_method" value="khalti" required> Khalti
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3"><strong>Delivery Charge</strong></td>
+                        <td><strong>$<span id="delivery-charge">0.00</span></strong></td>
+                    </tr>
+                    <tr>
+                        <td colspan="3"><strong>Grand Total</strong></td>
+                        <td><strong>$<span id="grand-total"><?= number_format($total_price, 2) ?></span></strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-success mt-3">Place Order</button>
+        </form>
+    </div>
 </div>
-
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
@@ -188,35 +221,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         let grandTotal = subtotal;
 
         if (subtotal < 50000) {
-            // Enable delivery options
             $('input[name="location"]').prop('disabled', false);
             $('label.delivery-option').removeClass('disabled').attr('title', '');
-            // Apply delivery charge based on selection
             deliveryCharge = $('input[name="location"]:checked').val() === 'inside' ? 100 : 300;
             grandTotal += deliveryCharge;
         } else {
-            // Disable delivery options and show a disabled message
             $('input[name="location"]').prop('checked', false).prop('disabled', true);
-            $('label.delivery-option')
-                .addClass('disabled')
-                .attr('title', 'Delivery is free for orders above $50,000');
-            deliveryCharge = 0; // No delivery charge
-            grandTotal = subtotal; // Only subtotal
+            $('label.delivery-option').addClass('disabled').attr('title', 'Delivery is free for orders above $50,000');
+            deliveryCharge = 0;
+            grandTotal = subtotal;
         }
 
-        // Update the delivery charge and grand total in the UI
         $('#delivery-charge').text(deliveryCharge.toFixed(2));
         $('#grand-total').text(grandTotal.toFixed(2));
     }
 
-    // Trigger update on page load and when delivery option changes
     $(document).ready(function () {
         updateDeliveryOptions();
         $('input[name="location"]').change(updateDeliveryOptions);
     });
 </script>
-
-
-
 </body>
 </html>

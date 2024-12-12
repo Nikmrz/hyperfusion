@@ -91,9 +91,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_pic'])) {
     border-radius: 50%; /* Makes it circular */
     object-fit: cover; /* Ensures the image scales proportionally without distortion */
     border: 2px solid #fff; /* Optional: Adds a border for aesthetics */
+
+    .suggestion-item {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #ffffff;
+        }
+        .suggestion-item:hover {
+            background-color: #f0f0f0;
+        }
+        #suggestions {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            width: 35%;
+            z-index: 1000;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+    
 }
 
   </style>
+  <script>
+     // AJAX for live search
+     $(document).ready(function() {
+        $('#searchText').on('keyup', function() {
+            let query = $(this).val();
+            
+            if (query.length > 0) {
+                $.ajax({
+                    url: 'search_suggestions.php',
+                    method: 'POST',
+                    data: { search: query },
+                    success: function(data) {
+                        $('#suggestions').html(data).show();
+                    }
+                });
+            } else {
+                $('#suggestions').hide();
+            }
+        });
+
+        $(document).click(function(e) {
+            if (!$(e.target).closest('.search-input').length) {
+                $('#suggestions').hide();
+            }
+        });
+
+        $(document).on('click', '.suggestion-item', function() {
+            let gameId = $(this).data('id');
+            window.location.href = 'details.php?id=' + gameId;
+        });
+    });
+   
+    </script>
   </head>
 
 <body>
@@ -111,11 +164,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_pic'])) {
                         <!-- ***** Logo End ***** -->
                         <!-- ***** Search Start ***** -->
                         <div class="search-input">
-                            <form id="search" action="#">
-                                <input type="text" placeholder="Type Something" id='searchText' name="searchKeyword" onkeypress="handle" />
-                                <i class="fa fa-search"></i>
-                            </form>
-                        </div>
+                        <form id="search" action="#">
+                            <input type="text" placeholder="Type Something" id="searchText" name="searchKeyword" autocomplete="off" />
+                            <i class="fa fa-search"></i>
+                        </form>
+                        <div id="suggestions"></div>
+                    </div>
                         <!-- ***** Search End ***** -->
                         <!-- ***** Menu Start ***** -->
                         <ul class="nav">
@@ -174,7 +228,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_pic'])) {
                         <?php include 'cart_view.php'; ?>
                     </div>
                     <!-- ***** Gaming Library End ***** -->
-
+                    <div class="gaming-library profile-library">
+                        <?php include 'orderhistory.php'; ?>
+                    </div>
+                   
 
          </div>
       </div>
