@@ -1,49 +1,90 @@
 <?php
+// Start a session to check if the user is logged in
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Include the database connection
 include 'db.php';
 
-// Check if the user is logged in
+// Check if the user is logged in (session is set)
 if (!isset($_SESSION['user_id'])) {
+    // If not logged in, redirect to the login page
     echo "<script>alert('Please log in first.'); window.location.href = 'Login/login.html';</script>";
     exit();
 }
 
-// Fetch the logged-in user's information
+// Get the logged-in user's ID
 $user_id = $_SESSION['user_id'];
+
+// Fetch user details from the database
 $query = mysqli_prepare($con, "SELECT username, email, number, created_at, profile_pic FROM users WHERE id = ?");
-mysqli_stmt_bind_param($query, "i", $user_id);
+mysqli_stmt_bind_param($query, "i", $user_id); // Use the user ID in the query
 mysqli_stmt_execute($query);
 $result = mysqli_stmt_get_result($query);
-$user = mysqli_fetch_assoc($result);
+$user = mysqli_fetch_assoc($result); // Store user data in an associative array
 
-// Handle profile picture upload
+// Check if the form has been submitted with a profile picture
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_pic'])) {
-    $targetDir = "uploads/";
-    $fileName = basename($_FILES["profile_pic"]["name"]);
-    $targetFilePath = $targetDir . $fileName;
-    $fileType = pathinfo($targetFilePath, PATHINFO_EXTENSION);
 
-    // Allow only certain file formats
+    // Set the directory to store uploaded files
+    $targetDir = "uploads/";  // Directory where the image will be uploaded
+    $fileName = basename($_FILES["profile_pic"]["name"]); // Get the file name
+    $targetFilePath = $targetDir . $fileName; // Complete path to save the file
+    $fileType = pathinfo($targetFilePath, PATHINFO_EXTENSION); // Get the file extension
+
+    // Check for upload errors
+    if ($_FILES['profile_pic']['error'] !== UPLOAD_ERR_OK) {
+        // Handle file upload errors (e.g., file too large, partial upload, etc.)
+        echo "<script>alert('Error uploading file. Please try again.');</script>";
+        exit();
+    }
+
+    // Sanitize file name to avoid special characters
+    $fileName = preg_replace("/[^a-zA-Z0-9\-_\.]/", "_", $fileName);
+
+    // Check if the file is a valid image type (JPG, PNG, GIF, etc.)
     $allowedTypes = array("jpg", "jpeg", "png", "gif");
     if (in_array($fileType, $allowedTypes)) {
-        // Upload file to server
-        if (move_uploaded_file($_FILES["profile_pic"]["tmp_name"], $targetFilePath)) {
-            // Update profile_pic path in the database
-            $updateQuery = mysqli_prepare($con, "UPDATE users SET profile_pic = ? WHERE id = ?");
-            mysqli_stmt_bind_param($updateQuery, "si", $targetFilePath, $user_id);
-            mysqli_stmt_execute($updateQuery);
-            echo "<script>alert('Profile picture updated successfully!'); window.location.href = 'profile.php';</script>";
+
+        // Check if the file size is less than 5MB
+        if ($_FILES['profile_pic']['size'] <= 5 * 1024 * 1024) {
+
+            // Check if the "uploads" directory exists, if not, create it
+            if (!file_exists($targetDir)) {
+                mkdir($targetDir, 0777, true); // Create uploads directory with write permissions
+            }
+
+            // Move the uploaded file to the target directory
+            if (move_uploaded_file($_FILES["profile_pic"]["tmp_name"], $targetFilePath)) {
+                // File uploaded successfully
+
+                // Update the database with the new profile picture path
+                $updateQuery = mysqli_prepare($con, "UPDATE users SET profile_pic = ? WHERE id = ?");
+                mysqli_stmt_bind_param($updateQuery, "si", $targetFilePath, $user_id);
+                if (mysqli_stmt_execute($updateQuery)) {
+                    // If update is successful, show success message and redirect to profile page
+                    echo "<script>alert('Profile picture updated successfully!'); window.location.href = 'profile.php';</script>";
+                } else {
+                    echo "<script>alert('Error updating profile picture in the database.');</script>";
+                }
+
+            } else {
+                echo "<script>alert('Failed to upload file. Check the directory permissions.');</script>";
+            }
+
         } else {
-            echo "<script>alert('File upload failed, please try again.');</script>";
+            echo "<script>alert('File is too large. Maximum size is 5MB.');</script>";
         }
+
     } else {
-        echo "<script>alert('Only JPG, JPEG, PNG, & GIF files are allowed.');</script>";
+        echo "<script>alert('Invalid file type. Only JPG, JPEG, PNG, and GIF files are allowed.');</script>";
     }
 }
 ?>
+
+
+
 
 
 <!DOCTYPE html>
@@ -98,7 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_pic'])) {
                         <ul class="nav">
                             <li><a href="index.php">Home</a></li>
                             <li><a href="#">Browse</a></li>
-                            <li><a href="#">Streams</a></li>
+                            <li><a href="streams.php">Streams</a></li>
                             <li><a href="profile.php" class="active">Profile <img src="assets/images/profile-header.jpg" alt=""></a></li>
                         </ul>   
                         <a class='menu-trigger'>

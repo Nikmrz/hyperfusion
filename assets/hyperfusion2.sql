@@ -26,7 +26,6 @@ SET time_zone = "+00:00";
 --
 -- Table structure for table `gamedetails`
 --
-
 CREATE TABLE `gamedetails` (
   `id` int NOT NULL,
   `name` varchar(255) NOT NULL,
@@ -41,7 +40,8 @@ CREATE TABLE `gamedetails` (
   `image_one` varchar(255) DEFAULT NULL,
   `image_two` varchar(255) DEFAULT NULL,
   `image_three` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 
 --
 -- Dumping data for table `gamedetails`
@@ -102,7 +102,7 @@ CREATE TABLE `games` (
   `rating` float NOT NULL,
   `price` decimal(10,2) NOT NULL,
   `image` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+)  ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `games`
@@ -163,7 +163,7 @@ CREATE TABLE `orders` (
   `delivery_charge` decimal(10,2) NOT NULL,
   `location` enum('inside','outside') NOT NULL,
   `order_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+)  ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `orders`
@@ -191,7 +191,7 @@ CREATE TABLE `order_items` (
   `product_id` int NOT NULL,
   `quantity` int NOT NULL,
   `price` decimal(10,2) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+)  ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `order_items`
@@ -227,7 +227,7 @@ CREATE TABLE `users` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `number` varchar(10) NOT NULL,
   `profile_pic` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+)  ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`

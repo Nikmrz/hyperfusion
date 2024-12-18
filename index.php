@@ -116,7 +116,7 @@ shuffle($games);
                     <ul class="nav">
                         <li><a href="index.php" class="active">Home</a></li>
                         <li><a href="#">Browse</a></li>
-                        <li><a href="#">Streams</a></li>
+                        <li><a href="streams.php">Streams</a></li>
                         
                         <li><a href="profile.php">Profile <img src="assets/images/profile-header.jpg" alt=""></a></li>
                     </ul>   
